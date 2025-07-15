@@ -14,6 +14,9 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using CommunityToolkit.WinUI;
 using System.IO;
+using System.Windows;
+using Microsoft.UI.Windowing;
+using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -50,6 +53,23 @@ namespace LauncherXWinUI
 
             // Used in-tandem with the code in App.xaml.cs, for WinUIEx to save window position: https://github.com/dotMorten/WinUIEx/issues/61
             this.PersistenceId = "LauncherX-250f2258-1995-4edb-9db7-329a61a90a07";
+            this.VisibilityChanged += OnWindowVisibilityChanged;
+        }
+
+        private void OnWindowVisibilityChanged(object sender, WindowVisibilityChangedEventArgs args)
+        {
+            if (args.Visible)
+            {
+                // The window has been restored from minimized state.
+                var appWindow = this.AppWindow;
+                if (appWindow.Presenter is OverlappedPresenter presenter)
+                {
+                    if (presenter.State != OverlappedPresenterState.Minimized && UserSettingsClass.UseFullscreen == true)
+                    {
+                        this.SetWindowPresenter(AppWindowPresenterKind.FullScreen);
+                    }
+                }
+            }
         }
 
         // Helper methods
@@ -89,7 +109,9 @@ namespace LauncherXWinUI
                 AppTitleBar.Visibility = Visibility.Collapsed;
 
                 // Adjust controls
+
                 CloseButton.Visibility = Visibility.Visible;
+                MinimizeButton.Visibility = Visibility.Visible;
                 ControlsGrid.Margin = new Thickness(20, 10, 20, 0);
 
                 // Set fullscreen
@@ -104,6 +126,7 @@ namespace LauncherXWinUI
 
                 // Adjust controls
                 CloseButton.Visibility = Visibility.Collapsed;
+                MinimizeButton.Visibility = Visibility.Collapsed;
                 ControlsGrid.Margin = new Thickness(20, 0, 20, 0);
 
                 // Set normal windowing mode
@@ -841,6 +864,14 @@ namespace LauncherXWinUI
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Exit();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.AppWindow.SetPresenter(Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped);
+            var presenter = this.AppWindow.Presenter as OverlappedPresenter;
+
+            presenter?.Minimize();
         }
 
         // When window resized

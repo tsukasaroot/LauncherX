@@ -1,1 +1,7 @@
 /.vs
+WinFormsClassLibrary
+LauncherXWinUI/obj
+LauncherXWinUI/bin
+WinFormsClassLibrary/obj
+WinFormsClassLibrary/bin
+.sln
